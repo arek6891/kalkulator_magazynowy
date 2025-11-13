@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kalkulator Pracowników Magazynu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: 'var(--primary-color, #4f46e5)',
+              secondary: 'var(--secondary-color, #111827)',
+              background: 'var(--background-color, #f9fafb)',
+              card: 'var(--card-color, #ffffff)',
+              text: 'var(--text-color, #1f2937)',
+              'text-secondary': 'var(--text-secondary-color, #6b7280)',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        --primary-color: #4f46e5;
+        --secondary-color: #111827;
+        --background-color: #f3f4f6;
+        --card-color: #ffffff;
+        --text-color: #1f2937;
+        --text-secondary-color: #6b7280;
+      }
+      body.dark {
+        --primary-color: #6366f1;
+        --secondary-color: #f9fafb;
+        --background-color: #111827;
+        --card-color: #1f2937;
+        --text-color: #f9fafb;
+        --text-secondary-color: #9ca3af;
+      }
+      body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "recharts": "https://aistudiocdn.com/recharts@^3.4.1",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.553.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

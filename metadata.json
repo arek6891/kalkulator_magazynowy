@@ -1,0 +1,5 @@
+{
+  "name": "Kalkulator Pracowników Magazynu",
+  "description": "Aplikacja internetowa do obliczania i wizualizacji zapotrzebowania na pracowników magazynowych na podstawie danych o zleceniach i dostawach.",
+  "requestFramePermissions": []
+}
