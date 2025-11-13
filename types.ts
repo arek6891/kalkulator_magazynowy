@@ -2,12 +2,13 @@
 export interface WarehouseData {
   deliveries: number;
   itemsPerDelivery: number;
-  timePerDelivery: number; // in minutes
+  deliveriesPerHour: number;
   orders: number;
   itemsPerOrder: number;
-  timePerItemPick: number; // in minutes
-  timePerOrderPack: number; // in minutes
+  itemsPickedPerHour: number;
+  ordersPackedPerHour: number;
   workHours: number;
+  currentEmployees: number;
 }
 
 export interface CalculationResult {
@@ -16,4 +17,5 @@ export interface CalculationResult {
   packers: number;
   total: number;
   buffer: number;
+  needed: number;
 }

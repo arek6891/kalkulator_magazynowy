@@ -42,7 +42,7 @@ const Dashboard: React.FC<DashboardProps> = ({ result, inputData }) => {
                 <AlertCircle size={64} className="text-red-500 mb-4" />
                 <h3 className="text-2xl font-bold mb-2 text-red-600 dark:text-red-400">Błąd w danych</h3>
                 <p className="text-text-secondary max-w-sm">
-                    Sprawdź, czy pole "Godziny pracy zmiany" ma wartość większą od zera, aby można było przeprowadzić kalkulację.
+                    Sprawdź, czy pole "Godziny pracy zmiany" ma wartość większą od zera oraz czy wydajność (np. dostaw na godzinę) nie jest zerowa dla zadań z obciążeniem.
                 </p>
             </div>
         )
@@ -58,15 +58,35 @@ const Dashboard: React.FC<DashboardProps> = ({ result, inputData }) => {
         { name: 'Praca', dostawy: inputData.deliveries, zlecenia: inputData.orders }
     ];
 
+    const isSurplus = result.total < inputData.currentEmployees;
+    const neededColor = result.needed > 0 ? 'text-primary' : 'text-green-500';
+
     return (
         <div className="space-y-8">
-            <div className="p-6 bg-card rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
-                <div>
-                    <h2 className="text-lg font-semibold text-text-secondary">Sugerowana liczba pracowników</h2>
-                    <p className="text-5xl font-extrabold text-primary">{result.total}</p>
-                </div>
-                <div className="mt-4 sm:mt-0">
-                     <p className="text-sm text-text-secondary">W tym {result.buffer} os. buforu</p>
+             <div className="p-6 bg-card rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 text-center">
+                <h2 className="text-lg font-semibold text-text-secondary">Potrzebni dodatkowi pracownicy</h2>
+                <p className={`text-6xl font-extrabold my-2 ${neededColor}`}>
+                    {result.needed}
+                </p>
+                 {isSurplus && (
+                    <p className="text-green-500 font-semibold -mt-2 mb-2">
+                        (Nadmiar pracowników: {inputData.currentEmployees - result.total})
+                    </p>
+                 )}
+
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 flex justify-around items-center text-text">
+                    <div>
+                        <p className="text-xs text-text-secondary uppercase tracking-wider">Sugerowana</p>
+                        <p className="text-xl font-bold">{result.total}</p>
+                    </div>
+                     <div>
+                        <p className="text-xs text-text-secondary uppercase tracking-wider">Obecnie</p>
+                        <p className="text-xl font-bold">{inputData.currentEmployees}</p>
+                    </div>
+                     <div>
+                        <p className="text-xs text-text-secondary uppercase tracking-wider">Bufor</p>
+                        <p className="text-xl font-bold">{result.buffer}</p>
+                    </div>
                 </div>
             </div>
 

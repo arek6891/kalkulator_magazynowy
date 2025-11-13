@@ -10,23 +10,25 @@ import { Sun, Moon } from 'lucide-react';
 const mockData: WarehouseData = {
     deliveries: 25,
     itemsPerDelivery: 100,
-    timePerDelivery: 45,
+    deliveriesPerHour: 2,
     orders: 150,
     itemsPerOrder: 5,
-    timePerItemPick: 2,
-    timePerOrderPack: 10,
+    itemsPickedPerHour: 60,
+    ordersPackedPerHour: 6,
     workHours: 8,
+    currentEmployees: 15,
 };
 
 const initialWarehouseData: WarehouseData = {
     deliveries: 0,
     itemsPerDelivery: 0,
-    timePerDelivery: 0,
+    deliveriesPerHour: 0,
     orders: 0,
     itemsPerOrder: 0,
-    timePerItemPick: 0,
-    timePerOrderPack: 0,
+    itemsPickedPerHour: 0,
+    ordersPackedPerHour: 0,
     workHours: 8,
+    currentEmployees: 0,
 };
 
 function App() {

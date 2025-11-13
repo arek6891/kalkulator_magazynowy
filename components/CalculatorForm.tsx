@@ -3,7 +3,7 @@ import React from 'react';
 import { WarehouseData } from '../types';
 import InputField from './InputField';
 import Button from './Button';
-import { Package, Truck, Download } from 'lucide-react';
+import { Package, Truck, Download, Users } from 'lucide-react';
 
 interface CalculatorFormProps {
     data: WarehouseData;
@@ -33,9 +33,9 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ data, setData, onCalcul
                         Dostawy
                     </legend>
                     <div className="space-y-4">
-                        <InputField label="Ilość dostaw" name="deliveries" value={data.deliveries} onChange={handleChange} />
+                        <InputField label="Ilość dostaw (dziennie)" name="deliveries" value={data.deliveries} onChange={handleChange} />
                         <InputField label="Śr. ilość art. w dostawie" name="itemsPerDelivery" value={data.itemsPerDelivery} onChange={handleChange} />
-                        <InputField label="Czas obsługi dostawy (min)" name="timePerDelivery" value={data.timePerDelivery} onChange={handleChange} />
+                        <InputField label="Dostaw na godz./pracownika" name="deliveriesPerHour" value={data.deliveriesPerHour} onChange={handleChange} />
                     </div>
                 </fieldset>
                 
@@ -45,13 +45,14 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ data, setData, onCalcul
                         Zlecenia
                     </legend>
                     <div className="space-y-4">
-                        <InputField label="Ilość zleceń" name="orders" value={data.orders} onChange={handleChange} />
+                        <InputField label="Ilość zleceń (dziennie)" name="orders" value={data.orders} onChange={handleChange} />
                         <InputField label="Śr. ilość art. w zleceniu" name="itemsPerOrder" value={data.itemsPerOrder} onChange={handleChange} />
-                        <InputField label="Czas na zebranie art. (min)" name="timePerItemPick" value={data.timePerItemPick} onChange={handleChange} />
-                        <InputField label="Czas pakowania zlecenia (min)" name="timePerOrderPack" value={data.timePerOrderPack} onChange={handleChange} />
+                        <InputField label="Sztuk zebranych na godz./pracownika" name="itemsPickedPerHour" value={data.itemsPickedPerHour} onChange={handleChange} />
+                        <InputField label="Zleceń spakowanych na godz./pracownika" name="ordersPackedPerHour" value={data.ordersPackedPerHour} onChange={handleChange} />
                     </div>
                 </fieldset>
-
+                
+                <InputField label="Obecna liczba pracowników" name="currentEmployees" value={data.currentEmployees} onChange={handleChange} />
                 <InputField label="Godziny pracy zmiany" name="workHours" value={data.workHours} onChange={handleChange} />
 
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
