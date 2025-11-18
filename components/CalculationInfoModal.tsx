@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X, Calculator, Clock, Zap, Users } from 'lucide-react';
+import { X, Calculator, Clock, Zap, Users, AlertTriangle } from 'lucide-react';
 
 interface CalculationInfoModalProps {
     isOpen: boolean;
@@ -78,6 +78,24 @@ const CalculationInfoModal: React.FC<CalculationInfoModalProps> = ({ isOpen, onC
                         <div className="bg-background p-4 rounded-lg font-mono text-sm border border-gray-200 dark:border-gray-700">
                             <span className="font-bold text-orange-500">FTE</span> = Roboczogodziny / Efektywny Czas (h)
                         </div>
+                    </section>
+
+                    {/* Section 4: Shortages (Braki) */}
+                    <section>
+                        <h3 className="text-lg font-semibold flex items-center gap-2 mb-3 text-primary">
+                            <AlertTriangle size={20} />
+                            4. Braki (Luka Kadrowa)
+                        </h3>
+                        <p className="text-sm text-text-secondary mb-3">
+                            Jest to kluczowy wskaźnik operacyjny pokazujący, ilu pracowników brakuje do zrealizowania planu przy założonych standardach.
+                        </p>
+                        <div className="bg-background p-4 rounded-lg font-mono text-sm border border-gray-200 dark:border-gray-700">
+                            <span className="font-bold text-red-500">Braki</span> = Wymagane FTE - Obecni Pracownicy
+                        </div>
+                        <p className="text-xs text-text-secondary mt-2">
+                            Jeśli wynik jest dodatni (np. +3), oznacza to konieczność dołożenia 3 osób (lub nadgodzin).<br/>
+                            Jeśli wynik jest 0 lub ujemny, obsada jest wystarczająca.
+                        </p>
                     </section>
                 </div>
 

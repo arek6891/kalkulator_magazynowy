@@ -1,5 +1,7 @@
 
 export interface WarehouseData {
+  id?: string; // Unique identifier for history
+  date?: string; // Date of the calculation
   deliveries: number;
   itemsPerDelivery: number;
   deliveriesPerHour: number;
@@ -22,4 +24,11 @@ export interface CalculationResult {
   buffer: number;
   needed: number;
   effectiveWorkHours: number; // For display purposes
+}
+
+export interface HistoryRecord {
+  id: string;
+  timestamp: number;
+  data: WarehouseData;
+  result: CalculationResult;
 }
