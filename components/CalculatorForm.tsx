@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { WarehouseData } from '../types';
 import InputField from './InputField';
 import Button from './Button';
-import { Package, Truck, Download, Settings, Calendar, Save, Play } from 'lucide-react';
+import SmartImportModal from './SmartImportModal';
+import { Package, Truck, Download, Settings, Calendar, Save, Play, Sparkles, ClipboardList } from 'lucide-react';
 
 interface CalculatorFormProps {
     data: WarehouseData;
@@ -14,6 +15,7 @@ interface CalculatorFormProps {
 }
 
 const CalculatorForm: React.FC<CalculatorFormProps> = ({ data, setData, onCalculate, onImport, onSave }) => {
+    const [isSmartImportOpen, setIsSmartImportOpen] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -23,10 +25,31 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ data, setData, onCalcul
         }));
     };
 
+    const handleParsedData = (parsed: Partial<WarehouseData>) => {
+        setData(prev => ({
+            ...prev,
+            ...parsed
+        }));
+        // Optional: Auto trigger calculate if enough data
+        // onCalculate(); 
+    };
+
     return (
         <div className="p-5 bg-card rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 h-full flex flex-col">
+            
+            <SmartImportModal 
+                isOpen={isSmartImportOpen} 
+                onClose={() => setIsSmartImportOpen(false)} 
+                onDataParsed={handleParsedData} 
+            />
+
             <div className="flex items-center justify-between mb-4 shrink-0">
-                <h2 className="text-xl font-bold text-text">Dane wejściowe</h2>
+                <h2 className="text-xl font-bold text-text flex items-center gap-2">
+                    <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-primary">
+                        <ClipboardList size={20} />
+                    </div>
+                    Dane wejściowe
+                </h2>
                 <div className="flex items-center gap-2">
                     <label htmlFor="date" className="sr-only">Data</label>
                     <div className="relative">
@@ -43,11 +66,23 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ data, setData, onCalcul
                 </div>
             </div>
             
-            <form onSubmit={(e) => { e.preventDefault(); onCalculate(); }} className="space-y-4 flex-grow overflow-y-auto pr-2 custom-scrollbar">
+            <div className="mb-4">
+                 <button 
+                    onClick={() => setIsSmartImportOpen(true)}
+                    className="w-full flex items-center justify-center gap-2 p-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all shadow-sm group"
+                 >
+                    <Sparkles size={16} className="group-hover:animate-pulse" />
+                    Inteligentny Import (Wklej Tekst)
+                 </button>
+            </div>
+            
+            <form onSubmit={(e) => { e.preventDefault(); onCalculate(); }} className="space-y-5 flex-grow overflow-y-auto pr-2 custom-scrollbar">
                 
-                <fieldset className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-                    <legend className="text-sm font-semibold flex items-center gap-2 px-2 text-text bg-card -mt-3">
-                        <Truck size={16} className="text-primary" />
+                <fieldset className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 pt-4 relative">
+                    <legend className="text-sm font-semibold flex items-center gap-2 px-2 text-text bg-card absolute -top-3 left-2">
+                        <span className="p-1 bg-blue-100 dark:bg-blue-900/30 rounded text-blue-600 dark:text-blue-400">
+                            <Truck size={16} />
+                        </span>
                         Dostawy
                     </legend>
                     <div className="space-y-3 mt-1">
@@ -57,9 +92,11 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ data, setData, onCalcul
                     </div>
                 </fieldset>
                 
-                <fieldset className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-                     <legend className="text-sm font-semibold flex items-center gap-2 px-2 text-text bg-card -mt-3">
-                        <Package size={16} className="text-primary" />
+                <fieldset className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 pt-4 relative">
+                     <legend className="text-sm font-semibold flex items-center gap-2 px-2 text-text bg-card absolute -top-3 left-2">
+                        <span className="p-1 bg-purple-100 dark:bg-purple-900/30 rounded text-purple-600 dark:text-purple-400">
+                            <Package size={16} />
+                        </span>
                         Zlecenia
                     </legend>
                     <div className="space-y-3 mt-1">
@@ -70,9 +107,11 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ data, setData, onCalcul
                     </div>
                 </fieldset>
                 
-                <fieldset className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-                     <legend className="text-sm font-semibold flex items-center gap-2 px-2 text-text bg-card -mt-3">
-                        <Settings size={16} className="text-primary" />
+                <fieldset className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 pt-4 relative">
+                     <legend className="text-sm font-semibold flex items-center gap-2 px-2 text-text bg-card absolute -top-3 left-2">
+                        <span className="p-1 bg-gray-100 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400">
+                            <Settings size={16} />
+                        </span>
                         Standardy Logistyczne
                     </legend>
                     <div className="grid grid-cols-2 gap-3 mt-1">

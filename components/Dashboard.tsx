@@ -4,14 +4,18 @@ import { CalculationResult, WarehouseData } from '../types';
 import WorkerChart from './WorkerChart';
 import WorkloadChart from './WorkloadChart';
 import ChartCard from './ChartCard';
+import AiInsightsCard from './AiInsightsCard';
 import { Users, AlertCircle, Clock } from 'lucide-react';
 
 interface DashboardProps {
     result: CalculationResult | null;
     inputData: WarehouseData;
+    aiAnalysis: string | null;
+    isAiLoading: boolean;
+    onGenerateAiAnalysis: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ result, inputData }) => {
+const Dashboard: React.FC<DashboardProps> = ({ result, inputData, aiAnalysis, isAiLoading, onGenerateAiAnalysis }) => {
     if (!result) {
         return (
             <div className="flex flex-col items-center justify-center h-full bg-card rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
@@ -47,55 +51,71 @@ const Dashboard: React.FC<DashboardProps> = ({ result, inputData }) => {
     ];
 
     const isSurplus = result.total < inputData.currentEmployees;
-    const neededColor = result.needed > 0 ? 'text-primary' : 'text-green-500';
+    const neededColor = result.needed > 0 ? 'text-primary' : 'text-green-600';
 
     return (
-        <div className="space-y-8">
-             <div className="p-6 bg-card rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 text-center">
-                <div className="flex justify-between items-start mb-4">
-                     <div className="text-left">
-                        <h2 className="text-lg font-semibold text-text-secondary">Zapotrzebowanie (FTE)</h2>
-                        <p className="text-xs text-text-secondary">Full Time Equivalent</p>
-                     </div>
-                     <div className="text-right bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
-                        <p className="text-xs text-text-secondary flex items-center justify-end gap-1">
-                             <Clock size={12} /> Efektywny czas pracy
+        <div className="space-y-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Main KPI Card */}
+                <div className="p-6 bg-card rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 text-center flex flex-col justify-between h-full">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="text-left">
+                            <h2 className="text-lg font-semibold text-text-secondary">Zapotrzebowanie (FTE)</h2>
+                            <p className="text-xs text-text-secondary">Full Time Equivalent</p>
+                        </div>
+                        {/* Changed style for better readability: Light blue background, dark blue text */}
+                        <div className="text-right bg-blue-50 border border-blue-100 p-3 rounded-lg shadow-sm">
+                            <p className="text-xs text-blue-600 font-semibold flex items-center justify-end gap-1 mb-1">
+                                <Clock size={14} /> Efektywny czas pracy
+                            </p>
+                            <p className="font-mono font-bold text-xl text-blue-900">{result.effectiveWorkHours}h <span className="text-sm font-normal text-blue-500">/ os.</span></p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p className={`text-5xl lg:text-6xl font-extrabold my-2 ${neededColor}`}>
+                            {result.needed > 0 ? `+${result.needed}` : "0"}
                         </p>
-                        <p className="font-mono font-bold text-text">{result.effectiveWorkHours}h / os.</p>
-                     </div>
-                </div>
-
-                <p className={`text-6xl font-extrabold my-2 ${neededColor}`}>
-                    {result.needed > 0 ? `+${result.needed}` : "0"}
-                </p>
-                {result.needed > 0 && <p className="text-text-secondary mb-4">dodatkowych pracowników</p>}
-                
-                 {isSurplus && (
-                    <p className="text-green-500 font-semibold -mt-2 mb-4">
-                        (Nadmiar pracowników: {inputData.currentEmployees - result.total})
-                    </p>
-                 )}
-
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 grid grid-cols-3 gap-4 text-text">
-                    <div className="flex flex-col items-center">
-                        <p className="text-xs text-text-secondary uppercase tracking-wider mb-1">Wymagane</p>
-                        <p className="text-2xl font-bold text-primary">{result.total}</p>
+                        {result.needed > 0 ? (
+                            <p className="text-text-secondary">dodatkowych pracowników</p>
+                        ) : (
+                            <p className="text-green-600 font-medium">Obsada optymalna</p>
+                        )}
+                        
+                        {isSurplus && (
+                            <p className="text-green-600 font-semibold text-sm mt-1">
+                                (Nadmiar: {inputData.currentEmployees - result.total})
+                            </p>
+                        )}
                     </div>
-                     <div className="flex flex-col items-center border-l border-r border-gray-200 dark:border-gray-600">
-                        <p className="text-xs text-text-secondary uppercase tracking-wider mb-1">Obecnie</p>
-                        <p className="text-2xl font-bold">{inputData.currentEmployees}</p>
-                    </div>
-                     <div className="flex flex-col items-center relative group cursor-help">
-                        <p className="text-xs text-text-secondary uppercase tracking-wider mb-1 underline decoration-dotted">Narzut</p>
-                        <p className="text-2xl font-bold text-orange-500">{result.buffer}</p>
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity w-48 pointer-events-none z-10 shadow-xl">
-                            Dodatkowi pracownicy wynikający z przerw ({inputData.breakTime}min) i wydajności ({inputData.processEfficiency}%)
+
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 grid grid-cols-3 gap-2 text-text">
+                        <div className="flex flex-col items-center">
+                            <p className="text-xs text-text-secondary uppercase tracking-wider mb-1">Wymagane</p>
+                            <p className="text-xl font-bold text-primary">{result.total}</p>
+                        </div>
+                        <div className="flex flex-col items-center border-l border-r border-gray-200 dark:border-gray-600">
+                            <p className="text-xs text-text-secondary uppercase tracking-wider mb-1">Obecnie</p>
+                            <p className="text-xl font-bold">{inputData.currentEmployees}</p>
+                        </div>
+                        <div className="flex flex-col items-center relative group cursor-help">
+                            <p className="text-xs text-text-secondary uppercase tracking-wider mb-1 underline decoration-dotted">Narzut</p>
+                            <p className="text-xl font-bold text-orange-500">{result.buffer}</p>
                         </div>
                     </div>
                 </div>
+
+                {/* AI Insights Card */}
+                <div className="h-full">
+                    <AiInsightsCard 
+                        analysis={aiAnalysis} 
+                        isLoading={isAiLoading} 
+                        onGenerate={onGenerateAiAnalysis} 
+                    />
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ChartCard title="Podział etatu (FTE)">
                     <WorkerChart data={workerData} />
                 </ChartCard>

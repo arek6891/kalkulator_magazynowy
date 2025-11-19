@@ -6,7 +6,8 @@ interface WorkerChartProps {
     data: { name: string; value: number }[];
 }
 
-const COLORS = ['#3b82f6', '#8b5cf6', '#10b981'];
+// Palette consistent with app theme: Sky-500, Indigo-600 (Primary), Violet-500
+const COLORS = ['#0ea5e9', '#4f46e5', '#8b5cf6'];
 
 const WorkerChart: React.FC<WorkerChartProps> = ({ data }) => {
     const RADIAN = Math.PI / 180;
@@ -20,7 +21,7 @@ const WorkerChart: React.FC<WorkerChartProps> = ({ data }) => {
         if (percent * 100 < 5) return null;
 
         return (
-            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-bold">
                 {`${(percent * 100).toFixed(0)}%`}
             </text>
         );
@@ -46,11 +47,15 @@ const WorkerChart: React.FC<WorkerChartProps> = ({ data }) => {
                 </Pie>
                 <Tooltip
                     contentStyle={{
-                        backgroundColor: 'var(--card-color)',
-                        borderColor: 'var(--primary-color)'
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e7eb',
+                        borderRadius: '0.5rem',
+                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                        color: '#1f2937'
                     }}
+                    itemStyle={{ color: '#1f2937' }}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ paddingTop: '20px' }}/>
             </PieChart>
         </ResponsiveContainer>
     );

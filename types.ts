@@ -31,4 +31,14 @@ export interface HistoryRecord {
   timestamp: number;
   data: WarehouseData;
   result: CalculationResult;
+  aiAnalysis?: string; // Optional AI insight
+}
+
+export interface AiParsingResponse {
+    deliveries?: number;
+    itemsPerDelivery?: number;
+    orders?: number;
+    itemsPerOrder?: number;
+    currentEmployees?: number;
+    workHours?: number;
 }

@@ -18,18 +18,24 @@ const WorkloadChart: React.FC<WorkloadChartProps> = ({ data }) => {
                     bottom: 5,
                 }}
             >
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--text-secondary-color)" strokeOpacity={0.2}/>
-                <XAxis dataKey="name" stroke="var(--text-secondary-color)" />
-                <YAxis stroke="var(--text-secondary-color)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                <XAxis dataKey="name" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip
+                    cursor={{ fill: '#f3f4f6' }}
                     contentStyle={{
-                        backgroundColor: 'var(--card-color)',
-                        borderColor: 'var(--primary-color)'
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e7eb',
+                        borderRadius: '0.5rem',
+                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                        color: '#1f2937'
                     }}
+                    itemStyle={{ color: '#1f2937' }}
                  />
-                <Legend />
-                <Bar dataKey="dostawy" fill="#3b82f6" name="Dostawy"/>
-                <Bar dataKey="zlecenia" fill="#8b5cf6" name="Zlecenia"/>
+                <Legend wrapperStyle={{ paddingTop: '20px' }}/>
+                {/* Updated colors: Deliveries (Sky-500), Orders (Indigo-600) */}
+                <Bar dataKey="dostawy" fill="#0ea5e9" name="Dostawy" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="zlecenia" fill="#4f46e5" name="Zlecenia" radius={[4, 4, 0, 0]} />
             </BarChart>
         </ResponsiveContainer>
     );

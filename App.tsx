@@ -1,13 +1,12 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { CalculationResult, WarehouseData, HistoryRecord } from './types';
 import { calculateWorkforce } from './services/calculationService';
+import { generateOperationalInsights } from './services/aiService';
 import CalculatorForm from './components/CalculatorForm';
 import Dashboard from './components/Dashboard';
 import Header from './components/Header';
 import CalculationInfoModal from './components/CalculationInfoModal';
 import HistoryView from './components/HistoryView';
-import { Sun, Moon } from 'lucide-react';
 
 const mockData: WarehouseData = {
     deliveries: 25,
@@ -44,10 +43,13 @@ type ViewState = 'calculator' | 'history';
 function App() {
     const [data, setData] = useState<WarehouseData>(initialWarehouseData);
     const [result, setResult] = useState<CalculationResult | null>(null);
-    const [isDarkMode, setIsDarkMode] = useState(false);
     const [isInfoOpen, setIsInfoOpen] = useState(false);
     const [currentView, setCurrentView] = useState<ViewState>('calculator');
     const [history, setHistory] = useState<HistoryRecord[]>([]);
+    
+    // AI State
+    const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+    const [isAiLoading, setIsAiLoading] = useState(false);
 
     // Load history from local storage on mount
     useEffect(() => {
@@ -66,6 +68,11 @@ function App() {
         localStorage.setItem('warehouseCalculatorHistory', JSON.stringify(history));
     }, [history]);
 
+    // Clear AI analysis when key data changes significantly to avoid stale insights
+    useEffect(() => {
+        setAiAnalysis(null);
+    }, [data.deliveries, data.orders, data.workHours, data.currentEmployees]);
+
     const handleCalculate = useCallback(() => {
         const calculation = calculateWorkforce(data);
         setResult(calculation);
@@ -76,6 +83,19 @@ function App() {
         const calculation = calculateWorkforce(mockData);
         setResult(calculation);
     }, []);
+
+    const handleGenerateAiAnalysis = async () => {
+        if (!result) return;
+        setIsAiLoading(true);
+        try {
+            const analysis = await generateOperationalInsights(data, result);
+            setAiAnalysis(analysis);
+        } catch (e) {
+            console.error("Error generating analysis", e);
+        } finally {
+            setIsAiLoading(false);
+        }
+    };
     
     const handleSave = () => {
         const calculation = calculateWorkforce(data);
@@ -85,33 +105,33 @@ function App() {
             id: data.id || crypto.randomUUID(),
             timestamp: Date.now(),
             data: { ...data },
-            result: calculation
+            result: calculation,
+            aiAnalysis: aiAnalysis || undefined
         };
 
         setHistory(prev => {
             const existingIndex = prev.findIndex(item => item.id === newRecord.id);
             if (existingIndex >= 0) {
-                // Update existing
                 const updated = [...prev];
                 updated[existingIndex] = newRecord;
                 return updated;
             } else {
-                // Add new
                 return [newRecord, ...prev];
             }
         });
 
-        // Reset ID to prevent overwriting immediately unless intended, 
-        // but here keeping it might be better for UX if they want to save again. 
-        // Let's keep the ID on the form data so they know they are editing.
         setData(prev => ({ ...prev, id: newRecord.id }));
-        
         alert("Dane zostały zapisane!");
     };
 
     const handleEditHistory = (record: HistoryRecord) => {
         setData(record.data);
         setResult(record.result);
+        if (record.aiAnalysis) {
+            setAiAnalysis(record.aiAnalysis);
+        } else {
+            setAiAnalysis(null);
+        }
         setCurrentView('calculator');
     };
 
@@ -122,7 +142,6 @@ function App() {
     };
 
     const handleExportExcel = () => {
-        // Create CSV content
         const headers = [
             "Data", "ID", 
             "Dostawy", "Art./Dostawa", "Norma Dostaw",
@@ -130,7 +149,7 @@ function App() {
             "Godziny Pracy", "Przerwa (min)", "Wydajność (%)",
             "Obecni Pracownicy",
             "Wymagani: Odbiór", "Wymagani: Kompletacja", "Wymagani: Pakowanie",
-            "Suma Wymagana", "Bufor", "Braki"
+            "Suma Wymagana", "Bufor", "Braki", "Analiza AI"
         ];
 
         const rows = history.map(rec => [
@@ -140,7 +159,8 @@ function App() {
             rec.data.workHours, rec.data.breakTime, rec.data.processEfficiency,
             rec.data.currentEmployees,
             rec.result.receivers, rec.result.pickers, rec.result.packers,
-            rec.result.total, rec.result.buffer, rec.result.needed
+            rec.result.total, rec.result.buffer, rec.result.needed,
+            rec.aiAnalysis ? "Tak" : "Nie"
         ]);
 
         const csvContent = [
@@ -158,30 +178,18 @@ function App() {
         document.body.removeChild(link);
     };
 
-    const toggleDarkMode = () => {
-        setIsDarkMode(prev => !prev);
-        document.body.classList.toggle('dark');
-    };
-
     return (
-        <div className="min-h-screen bg-background text-text font-sans transition-colors duration-300 flex flex-col">
+        <div className="min-h-screen bg-background text-text font-sans flex flex-col">
             <Header 
                 currentView={currentView}
                 onNavigate={setCurrentView}
                 onOpenInfo={() => setIsInfoOpen(true)} 
             />
-             <button
-                onClick={toggleDarkMode}
-                className="fixed top-20 right-4 z-50 p-2 rounded-full bg-card text-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors shadow-md border border-gray-200 dark:border-gray-700"
-                aria-label="Toggle dark mode"
-              >
-                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
             
             <main className="flex-grow container mx-auto px-4 py-8">
                 {currentView === 'calculator' ? (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
-                        <div className="lg:col-span-4">
+                        <div className="lg:col-span-4 h-full">
                             <CalculatorForm
                                 data={data}
                                 setData={setData}
@@ -190,8 +198,14 @@ function App() {
                                 onSave={handleSave}
                             />
                         </div>
-                        <div className="lg:col-span-8">
-                            <Dashboard result={result} inputData={data} />
+                        <div className="lg:col-span-8 h-full">
+                            <Dashboard 
+                                result={result} 
+                                inputData={data}
+                                aiAnalysis={aiAnalysis}
+                                isAiLoading={isAiLoading}
+                                onGenerateAiAnalysis={handleGenerateAiAnalysis}
+                            />
                         </div>
                     </div>
                 ) : (
