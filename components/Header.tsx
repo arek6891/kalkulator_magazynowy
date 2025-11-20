@@ -1,14 +1,23 @@
 
 import React from 'react';
-import { Warehouse, HelpCircle, Calculator, History } from 'lucide-react';
+import { Warehouse, HelpCircle, Calculator, History, Settings } from 'lucide-react';
 
 interface HeaderProps {
     onOpenInfo?: () => void;
-    currentView: 'calculator' | 'history';
-    onNavigate: (view: 'calculator' | 'history') => void;
+    currentView: 'calculator' | 'history' | 'settings';
+    onNavigate: (view: 'calculator' | 'history' | 'settings') => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ onOpenInfo, currentView, onNavigate }) => {
+    
+    const getButtonClass = (viewName: string) => {
+        return `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            currentView === viewName 
+                ? 'bg-card text-primary shadow-sm' 
+                : 'text-text-secondary hover:text-text'
+        }`;
+    };
+
     return (
         <header className="bg-card shadow-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
             <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
@@ -19,28 +28,27 @@ const Header: React.FC<HeaderProps> = ({ onOpenInfo, currentView, onNavigate }) 
                     </h1>
                 </div>
                 
-                <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+                <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg overflow-x-auto">
                     <button
                         onClick={() => onNavigate('calculator')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                            currentView === 'calculator' 
-                                ? 'bg-card text-primary shadow-sm' 
-                                : 'text-text-secondary hover:text-text'
-                        }`}
+                        className={getButtonClass('calculator')}
                     >
                         <Calculator size={18} />
                         Kalkulator
                     </button>
                     <button
                         onClick={() => onNavigate('history')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                            currentView === 'history' 
-                                ? 'bg-card text-primary shadow-sm' 
-                                : 'text-text-secondary hover:text-text'
-                        }`}
+                        className={getButtonClass('history')}
                     >
                         <History size={18} />
                         Historia
+                    </button>
+                    <button
+                        onClick={() => onNavigate('settings')}
+                        className={getButtonClass('settings')}
+                    >
+                        <Settings size={18} />
+                        <span className="hidden md:inline">Ustawienia</span>
                     </button>
                 </div>
 

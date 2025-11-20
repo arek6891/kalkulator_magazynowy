@@ -42,3 +42,9 @@ export interface AiParsingResponse {
     currentEmployees?: number;
     workHours?: number;
 }
+
+export interface AppSettings {
+    defaultWorkHours: number;
+    defaultBreakTime: number;
+    defaultEfficiency: number;
+}

@@ -1,5 +1,6 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
-import { CalculationResult, WarehouseData, HistoryRecord } from './types';
+import { CalculationResult, WarehouseData, HistoryRecord, AppSettings } from './types';
 import { calculateWorkforce } from './services/calculationService';
 import { generateOperationalInsights } from './services/aiService';
 import CalculatorForm from './components/CalculatorForm';
@@ -7,40 +8,39 @@ import Dashboard from './components/Dashboard';
 import Header from './components/Header';
 import CalculationInfoModal from './components/CalculationInfoModal';
 import HistoryView from './components/HistoryView';
+import SettingsView from './components/SettingsView';
 
-const mockData: WarehouseData = {
-    deliveries: 25,
-    itemsPerDelivery: 100,
-    deliveriesPerHour: 2,
-    orders: 150,
-    itemsPerOrder: 5,
-    itemsPickedPerHour: 60,
-    ordersPackedPerHour: 6,
-    workHours: 8,
-    currentEmployees: 15,
-    breakTime: 30,
-    processEfficiency: 85,
-    date: new Date().toISOString().split('T')[0]
+const defaultSettings: AppSettings = {
+    defaultWorkHours: 8,
+    defaultBreakTime: 30,
+    defaultEfficiency: 85
 };
 
-const initialWarehouseData: WarehouseData = {
-    deliveries: 0,
-    itemsPerDelivery: 0,
-    deliveriesPerHour: 0,
-    orders: 0,
-    itemsPerOrder: 0,
-    itemsPickedPerHour: 0,
-    ordersPackedPerHour: 0,
-    workHours: 8,
-    currentEmployees: 0,
-    breakTime: 30, 
-    processEfficiency: 85,
-    date: new Date().toISOString().split('T')[0]
-};
-
-type ViewState = 'calculator' | 'history';
+type ViewState = 'calculator' | 'history' | 'settings';
 
 function App() {
+    // Load settings first
+    const [settings, setSettings] = useState<AppSettings>(() => {
+        const savedSettings = localStorage.getItem('warehouseCalculatorSettings');
+        return savedSettings ? JSON.parse(savedSettings) : defaultSettings;
+    });
+
+    // Initial data depends on settings
+    const initialWarehouseData: WarehouseData = {
+        deliveries: 0,
+        itemsPerDelivery: 0,
+        deliveriesPerHour: 0,
+        orders: 0,
+        itemsPerOrder: 0,
+        itemsPickedPerHour: 0,
+        ordersPackedPerHour: 0,
+        workHours: settings.defaultWorkHours,
+        currentEmployees: 0,
+        breakTime: settings.defaultBreakTime, 
+        processEfficiency: settings.defaultEfficiency,
+        date: new Date().toISOString().split('T')[0]
+    };
+
     const [data, setData] = useState<WarehouseData>(initialWarehouseData);
     const [result, setResult] = useState<CalculationResult | null>(null);
     const [isInfoOpen, setIsInfoOpen] = useState(false);
@@ -68,6 +68,11 @@ function App() {
         localStorage.setItem('warehouseCalculatorHistory', JSON.stringify(history));
     }, [history]);
 
+    // Save settings to local storage whenever they change
+    useEffect(() => {
+        localStorage.setItem('warehouseCalculatorSettings', JSON.stringify(settings));
+    }, [settings]);
+
     // Clear AI analysis when key data changes significantly to avoid stale insights
     useEffect(() => {
         setAiAnalysis(null);
@@ -79,10 +84,39 @@ function App() {
     }, [data]);
 
     const handleImport = useCallback(() => {
-        setData({ ...mockData, date: new Date().toISOString().split('T')[0] });
-        const calculation = calculateWorkforce(mockData);
-        setResult(calculation);
-    }, []);
+        // Mock data needs to respect current settings for consistency
+        setData({ 
+            deliveries: 25,
+            itemsPerDelivery: 100,
+            deliveriesPerHour: 2,
+            orders: 150,
+            itemsPerOrder: 5,
+            itemsPickedPerHour: 60,
+            ordersPackedPerHour: 6,
+            workHours: settings.defaultWorkHours,
+            currentEmployees: 15,
+            breakTime: settings.defaultBreakTime,
+            processEfficiency: settings.defaultEfficiency,
+            date: new Date().toISOString().split('T')[0] 
+        });
+        // We calculate immediately after setting state, but since state update is async, 
+        // in a real effect loop it would be safer. For this simple mock, we calculate on the mock values directly.
+        const mockCalculation = calculateWorkforce({
+             deliveries: 25,
+            itemsPerDelivery: 100,
+            deliveriesPerHour: 2,
+            orders: 150,
+            itemsPerOrder: 5,
+            itemsPickedPerHour: 60,
+            ordersPackedPerHour: 6,
+            workHours: settings.defaultWorkHours,
+            currentEmployees: 15,
+            breakTime: settings.defaultBreakTime,
+            processEfficiency: settings.defaultEfficiency,
+            date: new Date().toISOString().split('T')[0] 
+        });
+        setResult(mockCalculation);
+    }, [settings]);
 
     const handleGenerateAiAnalysis = async () => {
         if (!result) return;
@@ -141,6 +175,12 @@ function App() {
         }
     };
 
+    const handleUpdateSettings = (newSettings: AppSettings) => {
+        setSettings(newSettings);
+        // Optionally ask user if they want to apply to current view, for now we just save.
+        // If current data is "empty" or default, we could auto-update, but it's safer to leave user input alone.
+    };
+
     const handleExportExcel = () => {
         const headers = [
             "Data", "ID", 
@@ -178,16 +218,10 @@ function App() {
         document.body.removeChild(link);
     };
 
-    return (
-        <div className="min-h-screen bg-background text-text font-sans flex flex-col">
-            <Header 
-                currentView={currentView}
-                onNavigate={setCurrentView}
-                onOpenInfo={() => setIsInfoOpen(true)} 
-            />
-            
-            <main className="flex-grow container mx-auto px-4 py-8">
-                {currentView === 'calculator' ? (
+    const renderView = () => {
+        switch (currentView) {
+            case 'calculator':
+                return (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
                         <div className="lg:col-span-4 h-full">
                             <CalculatorForm
@@ -208,14 +242,36 @@ function App() {
                             />
                         </div>
                     </div>
-                ) : (
+                );
+            case 'history':
+                return (
                     <HistoryView 
                         history={history} 
                         onEdit={handleEditHistory} 
                         onDelete={handleDeleteHistory}
                         onExport={handleExportExcel}
                     />
-                )}
+                );
+            case 'settings':
+                return (
+                    <SettingsView 
+                        settings={settings} 
+                        onSave={handleUpdateSettings} 
+                    />
+                );
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-background text-text font-sans flex flex-col">
+            <Header 
+                currentView={currentView}
+                onNavigate={setCurrentView}
+                onOpenInfo={() => setIsInfoOpen(true)} 
+            />
+            
+            <main className="flex-grow container mx-auto px-4 py-8">
+                {renderView()}
             </main>
             
             <CalculationInfoModal 
