@@ -1,48 +1,76 @@
-
 import { WarehouseData, CalculationResult } from '../types';
 
 export const calculateWorkforce = (data: WarehouseData): CalculationResult => {
+  // 1. Defensive Destructuring & Default Values
+  // Ensures we don't crash if data is null/undefined or fields are missing
   const {
-    deliveries,
-    deliveriesPerHour,
-    orders,
-    itemsPerOrder,
-    itemsPickedPerHour,
-    ordersPackedPerHour,
-    workHours,
-    currentEmployees,
-    breakTime = 30, // Default 30 min if not provided
-    processEfficiency = 85 // Default 85% if not provided
-  } = data;
+    deliveries = 0,
+    deliveriesPerHour = 0,
+    orders = 0,
+    itemsPerOrder = 0,
+    itemsPickedPerHour = 0,
+    ordersPackedPerHour = 0,
+    workHours = 0,
+    currentEmployees = 0,
+    breakTime = 30, 
+    processEfficiency = 85
+  } = data || {};
 
-  if (workHours <= 0) {
-    return { receivers: 0, pickers: 0, packers: 0, total: 0, buffer: 0, needed: 0, effectiveWorkHours: 0 };
+  // Standard "Empty/Error" Result
+  const safeZeroResult: CalculationResult = {
+    receivers: 0, pickers: 0, packers: 0, total: 0, buffer: 0, needed: 0, effectiveWorkHours: 0
+  };
+
+  // 2. Basic Validation
+  // Check for invalid numbers (NaN) or non-positive shift duration
+  if (isNaN(workHours) || workHours <= 0) {
+    return safeZeroResult;
   }
 
-  // 1. Calculate Net Available Time per Person (Logistics Standard)
+  // 3. Calculate Net Available Time per Person (Logistics Standard)
   // Nominal Hours - Breaks = Net Hours
-  const breakHours = breakTime / 60;
+  const breakHours = (breakTime || 0) / 60;
+  
+  // Safety check: Breaks cannot be longer than the shift itself
+  if (breakHours >= workHours) {
+      return safeZeroResult;
+  }
+
   const netAvailableHours = Math.max(0, workHours - breakHours);
   
-  // 2. Apply Process Efficiency (OEE / Utilization)
-  // Real capacity is lower than net hours due to fatigue, micro-stops, etc.
-  const efficiencyFactor = processEfficiency / 100;
-  const effectiveProductiveHoursPerPerson = netAvailableHours * efficiencyFactor;
-
-  if (effectiveProductiveHoursPerPerson <= 0) {
-      return { receivers: 0, pickers: 0, packers: 0, total: 0, buffer: 0, needed: 0, effectiveWorkHours: 0 };
+  // 4. Apply Process Efficiency (OEE / Utilization)
+  // Ensure efficiency is positive to prevent division by zero later
+  const safeEfficiency = Math.max(0, (processEfficiency || 85)); 
+  const efficiencyFactor = safeEfficiency / 100;
+  
+  // Check if efficiency factor is effectively zero to avoid division issues
+  if (efficiencyFactor <= 0.01) {
+      return safeZeroResult;
   }
 
-  // 3. Calculate Workload in Man-Hours (Standard Hours)
-  const receivingManHours = deliveriesPerHour > 0 ? deliveries / deliveriesPerHour : 0;
+  const effectiveProductiveHoursPerPerson = netAvailableHours * efficiencyFactor;
+
+  // 5. Calculate Workload in Man-Hours (Standard Hours)
+  // Handle Division by Zero for Norms: If norm is 0, but volume > 0, technically FTE is Infinity.
+  // For UI safety, we treat 0 norm as 0 workload required (or user needs to correct input).
+  
+  const receivingManHours = (deliveries > 0 && deliveriesPerHour > 0) 
+    ? deliveries / deliveriesPerHour 
+    : 0;
   
   const totalItemsToPick = orders * itemsPerOrder;
-  const pickingManHours = itemsPickedPerHour > 0 ? totalItemsToPick / itemsPickedPerHour : 0;
+  const pickingManHours = (totalItemsToPick > 0 && itemsPickedPerHour > 0) 
+    ? totalItemsToPick / itemsPickedPerHour 
+    : 0;
   
-  const packingManHours = ordersPackedPerHour > 0 ? orders / ordersPackedPerHour : 0;
+  const packingManHours = (orders > 0 && ordersPackedPerHour > 0) 
+    ? orders / ordersPackedPerHour 
+    : 0;
 
-  // 4. Calculate FTE (Full Time Equivalent) Required
+  // 6. Calculate FTE (Full Time Equivalent) Required
   // Formula: Workload Hours / Effective Productive Hours per Person
+  // We already ensured effectiveProductiveHoursPerPerson > 0 above.
+  
   const receiversRequired = receivingManHours / effectiveProductiveHoursPerPerson;
   const pickersRequired = pickingManHours / effectiveProductiveHoursPerPerson;
   const packersRequired = packingManHours / effectiveProductiveHoursPerPerson;
