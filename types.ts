@@ -24,6 +24,7 @@ export interface CalculationResult {
   buffer: number;
   needed: number;
   effectiveWorkHours: number; // For display purposes
+  error?: string; // Specific validation error message
 }
 
 export interface HistoryRecord {

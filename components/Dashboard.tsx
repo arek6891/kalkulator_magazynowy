@@ -28,13 +28,28 @@ const Dashboard: React.FC<DashboardProps> = ({ result, inputData, aiAnalysis, is
         );
     }
     
+    // Check for specific validation error from service
+    if (result.error) {
+        return (
+             <div className="flex flex-col items-center justify-center h-full bg-card rounded-xl shadow-lg border border-red-200 dark:border-red-800 p-8 text-center">
+                <AlertCircle size={64} className="text-red-500 mb-4" />
+                <h3 className="text-2xl font-bold mb-2 text-red-600 dark:text-red-400">Błąd Walidacji</h3>
+                <p className="text-text text-lg font-medium mb-2">{result.error}</p>
+                <p className="text-text-secondary text-sm max-w-md">
+                    Popraw zaznaczone wartości w formularzu, aby dokonać obliczeń.
+                </p>
+            </div>
+        )
+    }
+
+    // Fallback check for generic logical errors (legacy check)
     if (result.total === 0 && (inputData.deliveries > 0 || inputData.orders > 0)) {
         return (
              <div className="flex flex-col items-center justify-center h-full bg-card rounded-xl shadow-lg border border-red-200 dark:border-red-800 p-8 text-center">
                 <AlertCircle size={64} className="text-red-500 mb-4" />
                 <h3 className="text-2xl font-bold mb-2 text-red-600 dark:text-red-400">Błąd w danych</h3>
                 <p className="text-text-secondary max-w-sm">
-                    Sprawdź, czy pole "Godziny pracy zmiany" ma wartość większą od zera oraz czy wydajność (np. dostaw na godzinę) nie jest zerowa.
+                    Sprawdź, czy normy wydajnościowe (np. dostawy na godzinę) nie wynoszą zero przy dodatnim wolumenie.
                 </p>
             </div>
         )
