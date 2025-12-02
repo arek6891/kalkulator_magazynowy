@@ -4,7 +4,7 @@ import { WarehouseData } from '../types';
 import InputField from './InputField';
 import Button from './Button';
 import SmartImportModal from './SmartImportModal';
-import { Package, Truck, Download, Settings, Calendar, Save, Play, Sparkles, ClipboardList } from 'lucide-react';
+import { Package, Truck, Download, Settings, Calendar, Save, Play, Sparkles, ClipboardList, Edit3 } from 'lucide-react';
 
 interface CalculatorFormProps {
     data: WarehouseData;
@@ -12,9 +12,10 @@ interface CalculatorFormProps {
     onCalculate: () => void;
     onImport: () => void;
     onSave: () => void;
+    isUpdateMode: boolean;
 }
 
-const CalculatorForm: React.FC<CalculatorFormProps> = ({ data, setData, onCalculate, onImport, onSave }) => {
+const CalculatorForm: React.FC<CalculatorFormProps> = ({ data, setData, onCalculate, onImport, onSave, isUpdateMode }) => {
     const [isSmartImportOpen, setIsSmartImportOpen] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,7 +118,7 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ data, setData, onCalcul
                     </div>
                 </fieldset>
 
-                {/* Submit Button moved inside form, removed onClick to rely on onSubmit */}
+                {/* Submit Button */}
                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col gap-3 shrink-0">
                     <Button 
                         type="submit" 
@@ -134,10 +135,22 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ data, setData, onCalcul
                             onClick={onSave} 
                             variant="secondary" 
                             fullWidth 
-                            className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                            className={isUpdateMode 
+                                ? "border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" 
+                                : "border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                            }
                         >
-                            <Save size={18} className="mr-2" />
-                            {data.id ? 'Aktualizuj' : 'Zapisz'}
+                            {isUpdateMode ? (
+                                <>
+                                    <Edit3 size={18} className="mr-2" />
+                                    Aktualizuj
+                                </>
+                            ) : (
+                                <>
+                                    <Save size={18} className="mr-2" />
+                                    Zapisz
+                                </>
+                            )}
                         </Button>
 
                         <Button type="button" onClick={onImport} variant="secondary" fullWidth>

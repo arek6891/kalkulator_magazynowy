@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { CalculationResult, WarehouseData, HistoryRecord, AppSettings } from './types';
 import { calculateWorkforce } from './services/calculationService';
 import { generateOperationalInsights } from './services/aiService';
@@ -73,6 +73,15 @@ function App() {
         localStorage.setItem('warehouseCalculatorSettings', JSON.stringify(settings));
     }, [settings]);
 
+    // Determine if we are in "Update Mode" (Editing an existing record with the same date)
+    const isUpdateMode = useMemo(() => {
+        if (!data.id) return false;
+        const existingRecord = history.find(h => h.id === data.id);
+        if (!existingRecord) return false;
+        // It is an update only if the date hasn't changed
+        return existingRecord.data.date === data.date;
+    }, [data.id, data.date, history]);
+
     const handleCalculate = useCallback(() => {
         const calculation = calculateWorkforce(data);
         setResult(calculation);
@@ -121,27 +130,61 @@ function App() {
         const calculation = calculateWorkforce(data);
         setResult(calculation);
 
+        // Determine if we should create a new record or update an existing one
+        let finalId = data.id;
+        let shouldCreateNew = false;
+        let userMessage = "";
+
+        if (!finalId) {
+            // No ID yet = New Record
+            finalId = crypto.randomUUID();
+            shouldCreateNew = true;
+            userMessage = "Zapisano nowy raport!";
+        } else {
+            // ID exists, check history
+            const existingRecord = history.find(h => h.id === finalId);
+            
+            if (existingRecord) {
+                if (existingRecord.data.date !== data.date) {
+                    // Date changed = New Record (don't overwrite history from other days)
+                    finalId = crypto.randomUUID();
+                    shouldCreateNew = true;
+                    userMessage = `Utworzono nowy zapis dla daty ${data.date}!`;
+                } else {
+                    // Date matches = Update existing
+                    shouldCreateNew = false;
+                    userMessage = "Zaktualizowano istniejący zapis.";
+                }
+            } else {
+                // ID in state but not in history (rare case) = New Record
+                finalId = crypto.randomUUID();
+                shouldCreateNew = true;
+                userMessage = "Zapisano nowy raport!";
+            }
+        }
+
         const newRecord: HistoryRecord = {
-            id: data.id || crypto.randomUUID(),
+            id: finalId,
             timestamp: Date.now(),
-            data: { ...data },
+            data: { ...data, id: finalId }, // Ensure data has the correct ID
             result: calculation,
             aiAnalysis: aiAnalysis || undefined
         };
 
         setHistory(prev => {
-            const existingIndex = prev.findIndex(item => item.id === newRecord.id);
-            if (existingIndex >= 0) {
-                const updated = [...prev];
-                updated[existingIndex] = newRecord;
-                return updated;
-            } else {
+            if (shouldCreateNew) {
+                // Add new record to the top
                 return [newRecord, ...prev];
+            } else {
+                // Update existing record
+                return prev.map(item => item.id === finalId ? newRecord : item);
             }
         });
 
-        setData(prev => ({ ...prev, id: newRecord.id }));
-        alert("Dane zostały zapisane!");
+        // Update current state ID to match
+        setData(prev => ({ ...prev, id: finalId }));
+        
+        alert(userMessage);
     };
 
     const handleEditHistory = (record: HistoryRecord) => {
@@ -218,6 +261,7 @@ function App() {
                                 onCalculate={handleCalculate}
                                 onImport={handleImport}
                                 onSave={handleSave}
+                                isUpdateMode={isUpdateMode}
                             />
                         </div>
                         <div className="lg:col-span-8 h-full">
