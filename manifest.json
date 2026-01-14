@@ -1,7 +1,7 @@
 
 {
-  "short_name": "Kalkulator FTE",
-  "name": "Kalkulator Pracowników Magazynu",
+  "short_name": "Kalkulator",
+  "name": "Kalkulator Magazynowy",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/2891/2891415.png",

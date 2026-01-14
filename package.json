@@ -1,8 +1,8 @@
 
 {
-  "name": "warehouse-staff-calculator-v2",
+  "name": "kalkulator_magazynowy",
   "private": true,
-  "version": "2.0.4",
+  "version": "2.0.5",
   "type": "module",
   "scripts": {
     "dev": "vite",

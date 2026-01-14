@@ -1,4 +1,5 @@
-# Kalkulator Pracowników Magazynu (Warehouse Staff Calculator)
+
+# Kalkulator Magazynowy
 
 Aplikacja webowa typu SPA (Single Page Application) służąca do planowania zasobów ludzkich w logistyce. Pozwala na precyzyjne obliczenie zapotrzebowania na pracowników (FTE - Full Time Equivalent) w oparciu o wolumeny operacyjne oraz realne parametry wydajnościowe.
 
@@ -52,6 +53,9 @@ Gdzie:
 ---
 
 ## 📅 Dziennik Zmian (Changelog)
+
+### [2.0.5] - Zmiana nazwy
+*   Zmiana nazwy aplikacji na "Kalkulator Magazynowy" (kalkulator_magazynowy).
 
 ### [1.1.0] - Aktualizacja Standardów Logistycznych
 **Dodano:**
