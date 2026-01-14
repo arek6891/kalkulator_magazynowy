@@ -54,8 +54,9 @@ Gdzie:
 
 ## 📅 Dziennik Zmian (Changelog)
 
-### [2.0.5] - Zmiana nazwy
+### [2.0.7] - Zmiana nazwy i poprawki
 *   Zmiana nazwy aplikacji na "Kalkulator Magazynowy" (kalkulator_magazynowy).
+*   Naprawa zależności i aktualizacja wersji.
 
 ### [1.1.0] - Aktualizacja Standardów Logistycznych
 **Dodano:**
