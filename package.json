@@ -1,8 +1,8 @@
 
 {
-  "name": "warehouse-staff-calculator",
+  "name": "warehouse-staff-calculator-v2",
   "private": true,
-  "version": "1.2.0",
+  "version": "2.0.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,7 +14,7 @@
     "react-dom": "^18.3.1",
     "lucide-react": "^0.344.0",
     "recharts": "^2.12.2",
-    "@google/genai": "^0.2.1"
+    "@google/genai": "latest"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
