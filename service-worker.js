@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'kalkulator-magazynowy-v4';
+const CACHE_NAME = 'kalkulator-magazynowy-v9';
 const ASSETS = [
   './',
   './index.html',
