@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Warehouse, HelpCircle, Calculator, History, Settings } from 'lucide-react';
 
@@ -29,7 +28,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenInfo, currentView, onNavigate }) 
                 >
                     <Warehouse className="w-8 h-8 text-primary transition-transform group-hover:scale-105" />
                     <h1 className="ml-3 text-xl md:text-2xl font-bold text-text hidden sm:block">
-                        Kalkulator Magazynowy
+                        kalkulator_magazynowy
                     </h1>
                 </div>
                 

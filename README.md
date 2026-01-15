@@ -1,5 +1,4 @@
-
-# Kalkulator Magazynowy
+# kalkulator_magazynowy
 
 Aplikacja webowa typu SPA (Single Page Application) służąca do planowania zasobów ludzkich w logistyce. Pozwala na precyzyjne obliczenie zapotrzebowania na pracowników (FTE - Full Time Equivalent) w oparciu o wolumeny operacyjne oraz realne parametry wydajnościowe.
 
@@ -55,7 +54,7 @@ Gdzie:
 ## 📅 Dziennik Zmian (Changelog)
 
 ### [2.0.7] - Zmiana nazwy i poprawki
-*   Zmiana nazwy aplikacji na "Kalkulator Magazynowy" (kalkulator_magazynowy).
+*   Zmiana nazwy aplikacji na "kalkulator_magazynowy" dla zgodności z Vercel/GitHub.
 *   Naprawa zależności i aktualizacja wersji.
 
 ### [1.1.0] - Aktualizacja Standardów Logistycznych
