@@ -1,8 +1,8 @@
-
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { CalculationResult, WarehouseData, HistoryRecord, AppSettings } from './types';
 import { calculateWorkforce } from './services/calculationService';
 import { generateOperationalInsights } from './services/aiService';
+import { useHistory } from './hooks/useHistory';
 import CalculatorForm from './components/CalculatorForm';
 import Dashboard from './components/Dashboard';
 import Header from './components/Header';
@@ -45,28 +45,20 @@ function App() {
     const [result, setResult] = useState<CalculationResult | null>(null);
     const [isInfoOpen, setIsInfoOpen] = useState(false);
     const [currentView, setCurrentView] = useState<ViewState>('calculator');
-    const [history, setHistory] = useState<HistoryRecord[]>([]);
+    
+    // Use the new History Hook
+    const { 
+        history, 
+        addRecord, 
+        updateRecord, 
+        deleteRecord, 
+        isCloudEnabled, 
+        isSyncing 
+    } = useHistory();
     
     // AI State
     const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
     const [isAiLoading, setIsAiLoading] = useState(false);
-
-    // Load history from local storage on mount
-    useEffect(() => {
-        const savedHistory = localStorage.getItem('warehouseCalculatorHistory');
-        if (savedHistory) {
-            try {
-                setHistory(JSON.parse(savedHistory));
-            } catch (e) {
-                console.error("Failed to parse history", e);
-            }
-        }
-    }, []);
-
-    // Save history to local storage whenever it changes
-    useEffect(() => {
-        localStorage.setItem('warehouseCalculatorHistory', JSON.stringify(history));
-    }, [history]);
 
     // Save settings to local storage whenever they change
     useEffect(() => {
@@ -126,7 +118,7 @@ function App() {
         }
     };
     
-    const handleSave = () => {
+    const handleSave = async () => {
         const calculation = calculateWorkforce(data);
         setResult(calculation);
 
@@ -136,27 +128,22 @@ function App() {
         let userMessage = "";
 
         if (!finalId) {
-            // No ID yet = New Record
             finalId = crypto.randomUUID();
             shouldCreateNew = true;
             userMessage = "Zapisano nowy raport!";
         } else {
-            // ID exists, check history
             const existingRecord = history.find(h => h.id === finalId);
             
             if (existingRecord) {
                 if (existingRecord.data.date !== data.date) {
-                    // Date changed = New Record (don't overwrite history from other days)
                     finalId = crypto.randomUUID();
                     shouldCreateNew = true;
                     userMessage = `Utworzono nowy zapis dla daty ${data.date}!`;
                 } else {
-                    // Date matches = Update existing
                     shouldCreateNew = false;
                     userMessage = "Zaktualizowano istniejący zapis.";
                 }
             } else {
-                // ID in state but not in history (rare case) = New Record
                 finalId = crypto.randomUUID();
                 shouldCreateNew = true;
                 userMessage = "Zapisano nowy raport!";
@@ -166,20 +153,16 @@ function App() {
         const newRecord: HistoryRecord = {
             id: finalId,
             timestamp: Date.now(),
-            data: { ...data, id: finalId }, // Ensure data has the correct ID
+            data: { ...data, id: finalId },
             result: calculation,
             aiAnalysis: aiAnalysis || undefined
         };
 
-        setHistory(prev => {
-            if (shouldCreateNew) {
-                // Add new record to the top
-                return [newRecord, ...prev];
-            } else {
-                // Update existing record
-                return prev.map(item => item.id === finalId ? newRecord : item);
-            }
-        });
+        if (shouldCreateNew) {
+            await addRecord(newRecord);
+        } else {
+            await updateRecord(newRecord);
+        }
 
         // Update current state ID to match
         setData(prev => ({ ...prev, id: finalId }));
@@ -188,11 +171,9 @@ function App() {
     };
 
     const handleEditHistory = (record: HistoryRecord) => {
-        // First set the data
         setData(record.data);
         setResult(record.result);
         
-        // Explicitly handle AI analysis state
         if (record.aiAnalysis) {
             setAiAnalysis(record.aiAnalysis);
         } else {
@@ -202,9 +183,9 @@ function App() {
         setCurrentView('calculator');
     };
 
-    const handleDeleteHistory = (id: string) => {
+    const handleDeleteHistory = async (id: string) => {
         if (window.confirm("Czy na pewno chcesz usunąć ten zapis?")) {
-            setHistory(prev => prev.filter(item => item.id !== id));
+            await deleteRecord(id);
         }
     };
 
@@ -300,6 +281,8 @@ function App() {
                 currentView={currentView}
                 onNavigate={setCurrentView}
                 onOpenInfo={() => setIsInfoOpen(true)} 
+                isCloudEnabled={isCloudEnabled}
+                isSyncing={isSyncing}
             />
             
             <main className="flex-grow container mx-auto px-4 py-8">

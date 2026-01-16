@@ -4,7 +4,6 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // Ładuje zmienne środowiskowe z plików .env (dla lokalnego developmentu)
-  // Use '.' instead of process.cwd() to prevent TypeScript error about missing 'cwd' on Process type
   const env = loadEnv(mode, '.', '');
   
   return {
@@ -21,7 +20,9 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       // Priorytet: 1. Zmienna systemowa (Vercel) 2. Zmienna z pliku .env (Lokalnie)
-      'process.env.API_KEY': JSON.stringify(process.env.API_KEY || env.API_KEY)
+      'process.env.API_KEY': JSON.stringify(process.env.API_KEY || env.API_KEY),
+      'process.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || env.VITE_SUPABASE_URL),
+      'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY)
     }
   }
 })
