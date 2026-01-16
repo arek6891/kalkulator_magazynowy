@@ -1,66 +1,65 @@
 # kalkulator_magazynowy
 
-Aplikacja webowa typu SPA (Single Page Application) służąca do planowania zasobów ludzkich w logistyce. Pozwala na precyzyjne obliczenie zapotrzebowania na pracowników (FTE - Full Time Equivalent) w oparciu o wolumeny operacyjne oraz realne parametry wydajnościowe.
-
-## 🌍 Jak udostępnić aplikację znajomym? (Vercel)
-
-Aby aplikacja działała na telefonie innej osoby pod stałym linkiem, najlepiej wdrożyć ją na darmowy hosting **Vercel**. Ponieważ Twój kod jest już na GitHubie, zajmie to 2 minuty.
-
-### Krok 1: Przygotowanie
-1. Upewnij się, że wszystkie zmiany w StackBlitz/VS Code są wysłane na GitHub (**Commit & Push**).
-
-### Krok 2: Wdrożenie na Vercel
-1. Wejdź na stronę [vercel.com](https://vercel.com) i załóż darmowe konto (zaloguj się przez GitHub).
-2. Kliknij przycisk **"Add New..."** -> **"Project"**.
-3. Na liście "Import Git Repository" znajdź swoje repozytorium: `kalkulator_magazynowy` i kliknij **Import**.
-4. W sekcji "Configure Project" znajdź pole **Environment Variables** (Zmienne Środowiskowe):
-   * Wpisz **Key**: `API_KEY`
-   * Wpisz **Value**: (Twój klucz z Google AI Studio, zaczynający się od `AIza...`)
-   * Kliknij **Add**.
-5. Kliknij przycisk **Deploy**.
-
-### Krok 3: Gotowe!
-Po chwili Vercel wygeneruje link (np. `kalkulator-magazynowy.vercel.app`).
-* Wyślij ten link znajomemu.
-* Aplikacja działa na każdym telefonie, bez logowania.
+Aplikacja webowa typu SPA (Single Page Application) służąca do planowania zasobów ludzkich w logistyce. Pozwala na precyzyjne obliczenie zapotrzebowania na pracowników (FTE) w oparciu o wolumeny operacyjne.
 
 ---
 
-## 🚀 Jak uruchomić lokalnie / edytować?
+## 🛠️ Środowisko Deweloperskie: Google AI Studio
 
-### Opcja A: Masz edytor w chmurze (np. AI Studio, StackBlitz)
-1. Otwórz projekt w StackBlitz.
-2. W terminalu wpisz: `npm install` a potem `npm run dev`.
-3. Jeśli wystąpią błędy z wersjami, usuń plik blokady: `rm package-lock.json` i spróbuj ponownie.
+**Ten projekt jest rozwijany przy wsparciu Google AI Studio.**
 
-### Opcja B: Masz komputer z Node.js
-1. Pobierz kod: `git clone ...`
-2. Zainstaluj zależności: `npm install`
-3. Uruchom: `npm run dev`
+### ⚠️ Złota zasada bezpieczeństwa dla tego projektu:
+1.  **NIGDY** nie wklejaj klucza API bezpośrednio do kodu (pliki `.tsx`, `.ts`, `.js`, `.html`).
+2.  Klucz API przechowujemy **TYLKO**:
+    *   Lokalnie: w pliku `.env` (który jest ignorowany przez Gita).
+    *   W chmurze (Vercel): w sekcji **Environment Variables**.
+3.  Jeśli AI poprosi o klucz lub wygeneruje kod z miejscem na klucz, upewnij się, że używa `process.env.API_KEY`.
+
+---
+
+## 🔒 Bezpieczeństwo Klucza API (Google Cloud)
+
+Ponieważ aplikacja działa w przeglądarce (Client-Side), sam klucz będzie widoczny w ruchu sieciowym. Aby nikt nie ukradł Twojego limitu zapytań, **musisz** nałożyć blokadę w panelu Google:
+
+1. Wejdź na **Google AI Studio / Cloud Console** -> sekcja **API Keys**.
+2. Kliknij swój klucz.
+3. W sekcji **"API restrictions"** lub **"Website restrictions"**:
+   * Zaznacz **Websites**.
+   * Dodaj domenę produkcyjną: `https://kalkulator-magazynowy.vercel.app/*`
+   * Dodaj domenę lokalną (do testów): `http://localhost:5173/*`
+4. Zapisz zmiany. Teraz klucz zadziała tylko na Twoich stronach.
 
 ---
 
-## 🚀 Główne Funkcjonalności
+## 🌍 Jak wdrożyć/zaktualizować aplikację? (Vercel)
 
-### 1. Zaawansowany Algorytm Obliczeniowy (Logistyka)
-*   **Efektywny Czas Pracy:** Automatyczne odejmowanie przerw.
-*   **Wskaźnik OEE:** Uwzględnienie % wydajności i zmęczenia.
-*   **FTE:** Wyniki zaokrąglane w górę dla bezpieczeństwa operacyjnego.
+### Krok 1: Wysłanie kodu
+1. W AI Studio / StackBlitz upewnij się, że plik `.env` **nie jest** wysyłany do GitHuba (dba o to plik `.gitignore`).
+2. Wyślij zmiany (Commit & Push).
 
-### 2. Obsługa Procesów
-*   Przyjęcie (Receiving)
-*   Kompletacja (Picking)
-*   Pakowanie (Packing)
+### Krok 2: Konfiguracja Vercel
+1. Jeśli to pierwsze uruchomienie, zaimportuj projekt na [vercel.com](https://vercel.com).
+2. W sekcji **Environment Variables** dodaj:
+   * Name: `API_KEY`
+   * Value: (Twój klucz z Google AI Studio zaczynający się od `AIza...`)
+3. Jeśli aktualizujesz aplikację, Vercel sam wykryje zmiany na GitHubie i przebuduje stronę w ciągu minuty.
 
-### 3. Dashboard i AI
-*   Wizualizacja graficzna wyników.
-*   **Inteligentny Import:** Wklej treść maila, a AI uzupełni tabelę.
-*   **Analityk AI:** Generowanie porad operacyjnych jednym kliknięciem.
+### Krok 3: Link dla użytkowników
+Używaj linku publicznego: `https://kalkulator-magazynowy.vercel.app`.
+(Nie mylić z linkiem do panelu administracyjnego Vercel).
 
 ---
+
+## 🚀 Uruchomienie lokalne (Testy)
+1. Pobierz kod / otwórz terminal.
+2. `npm install`
+3. Stwórz plik `.env` w głównym folderze:
+   ```
+   API_KEY=twoj_klucz_api_tutaj
+   ```
+4. `npm run dev`
 
 ## ⚙️ Technologia
 *   React 19 + TypeScript
-*   Vite
-*   Tailwind CSS
-*   Google Gemini API (via `@google/genai`)
+*   Vite + Tailwind CSS
+*   Google Gemini API

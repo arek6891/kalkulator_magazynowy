@@ -1,12 +1,20 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { WarehouseData, CalculationResult } from "../types";
 
-// Initialize Gemini
-// NOTE: In a real production build, ensure process.env.API_KEY is set in vite.config.ts define or .env
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to safely get the AI client
+// We initialize it lazily (only when needed) to prevent app crash if API key is missing on load
+const getAiClient = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey || apiKey.includes("AIza") === false) { 
+    // Basic check if it looks like a key, or is strictly missing
+    throw new Error("Brak poprawnego klucza API Google. Sprawdź konfigurację Vercel lub plik .env.");
+  }
+  return new GoogleGenAI({ apiKey: apiKey });
+};
 
 export const parseWarehouseText = async (text: string): Promise<Partial<WarehouseData>> => {
   try {
+    const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Extract logistic warehouse data from the following text. 
@@ -34,12 +42,14 @@ export const parseWarehouseText = async (text: string): Promise<Partial<Warehous
     return {};
   } catch (error) {
     console.error("AI Parsing Error:", error);
-    throw new Error("Nie udało się przetworzyć tekstu przez AI.");
+    // Return empty object instead of crashing, allow user to fill manually
+    return {}; 
   }
 };
 
 export const generateOperationalInsights = async (data: WarehouseData, result: CalculationResult): Promise<string> => {
     try {
+        const ai = getAiClient();
         const prompt = `
         Act as a Senior Logistics Manager. Analyze the following warehouse staffing calculation.
         
@@ -74,8 +84,11 @@ export const generateOperationalInsights = async (data: WarehouseData, result: C
 
         return response.text || "Brak analizy.";
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("AI Analysis Error:", error);
-        return "Nie udało się wygenerować analizy operacyjnej.";
+        if (error.message.includes("API key")) {
+            return "Błąd klucza API. Sprawdź ustawienia Vercel.";
+        }
+        return "Nie udało się wygenerować analizy. Sprawdź połączenie.";
     }
 }
