@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { HistoryRecord } from '../types';
 import { supabase, isCloudEnabled } from '../services/supabase';
 
@@ -24,9 +24,16 @@ export const useHistory = () => {
                 
                 if (error) throw error;
                 
-                // Map DB structure back to app structure if needed, or assume 1:1 match
+                // Map DB structure (snake_case) back to app structure (camelCase)
                 if (data) {
-                    setHistory(data as HistoryRecord[]);
+                    const mappedHistory: HistoryRecord[] = data.map((item: any) => ({
+                        id: item.id,
+                        timestamp: item.timestamp,
+                        data: item.data,
+                        result: item.result,
+                        aiAnalysis: item.ai_analysis // Mapowanie z bazy do aplikacji
+                    }));
+                    setHistory(mappedHistory);
                 }
             } else {
                 // Local Mode
@@ -49,13 +56,22 @@ export const useHistory = () => {
             setHistory(prev => [record, ...prev]);
 
             if (isCloudEnabled && supabase) {
+                // Mapowanie z aplikacji do bazy (camelCase -> snake_case)
+                const dbRecord = {
+                    id: record.id,
+                    timestamp: record.timestamp,
+                    data: record.data,
+                    result: record.result,
+                    ai_analysis: record.aiAnalysis
+                };
+
                 const { error } = await supabase
                     .from('history')
-                    .insert([record]);
+                    .insert([dbRecord]);
+                
                 if (error) {
                     console.error("Cloud save failed:", error);
-                    alert("Błąd zapisu w chmurze!");
-                    // Revert optimistic update? Or just warn.
+                    // W razie błędu można by cofnąć zmianę w stanie, ale na razie tylko logujemy
                 }
             } else {
                 // Save to local storage
@@ -73,9 +89,17 @@ export const useHistory = () => {
             setHistory(prev => prev.map(item => item.id === record.id ? record : item));
 
             if (isCloudEnabled && supabase) {
+                const dbRecord = {
+                    id: record.id,
+                    timestamp: record.timestamp,
+                    data: record.data,
+                    result: record.result,
+                    ai_analysis: record.aiAnalysis
+                };
+
                 const { error } = await supabase
                     .from('history')
-                    .update(record)
+                    .update(dbRecord)
                     .eq('id', record.id);
                 if (error) throw error;
             } else {
