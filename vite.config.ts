@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => {
   
   return {
     plugins: [react()],
+    base: '/kalkulator_magazynowy/',
     server: {
       host: true, // Pozwala na dostęp z zewnątrz kontenera (StackBlitz)
       port: 5173,
