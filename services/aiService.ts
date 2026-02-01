@@ -89,6 +89,6 @@ export const generateOperationalInsights = async (data: WarehouseData, result: C
     if (error.message.includes("API key")) {
       return "Błąd klucza API. Sprawdź ustawienia Vercel.";
     }
-    return "Nie udało się wygenerować analizy. Sprawdź połączenie.";
+    return `Błąd AI: ${error.message || error.toString()}`;
   }
 }
