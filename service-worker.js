@@ -1,17 +1,20 @@
 
-const CACHE_NAME = 'kalkulator-magazynowy-v9';
-const ASSETS = [
-  './',
-  './index.html',
-  'https://cdn.tailwindcss.com'
-];
+const CACHE_NAME = 'kalkulator-magazynowy-v10-disabled';
+const ASSETS = [];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => caches.delete(cacheName))
+      );
     })
   );
+  return self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
