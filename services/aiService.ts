@@ -5,7 +5,7 @@ import { WarehouseData, CalculationResult } from "../types";
 // We initialize it lazily (only when needed) to prevent app crash if API key is missing on load
 const getAiClient = () => {
   const apiKey = process.env.API_KEY;
-  if (!apiKey || apiKey.includes("AIza") === false) { 
+  if (!apiKey || apiKey.includes("AIza") === false) {
     // Basic check if it looks like a key, or is strictly missing
     throw new Error("Brak poprawnego klucza API Google. Sprawdź konfigurację Vercel lub plik .env.");
   }
@@ -16,7 +16,7 @@ export const parseWarehouseText = async (text: string): Promise<Partial<Warehous
   try {
     const ai = getAiClient();
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-1.5-flash',
       contents: `Extract logistic warehouse data from the following text. 
       If a value is not mentioned, do not include it in the JSON.
       Text: "${text}"`,
@@ -37,20 +37,20 @@ export const parseWarehouseText = async (text: string): Promise<Partial<Warehous
     });
 
     if (response.text) {
-        return JSON.parse(response.text);
+      return JSON.parse(response.text);
     }
     return {};
   } catch (error) {
     console.error("AI Parsing Error:", error);
     // Return empty object instead of crashing, allow user to fill manually
-    return {}; 
+    return {};
   }
 };
 
 export const generateOperationalInsights = async (data: WarehouseData, result: CalculationResult): Promise<string> => {
-    try {
-        const ai = getAiClient();
-        const prompt = `
+  try {
+    const ai = getAiClient();
+    const prompt = `
         Act as a Senior Logistics Manager. Analyze the following warehouse staffing calculation.
         
         Input Data:
@@ -77,18 +77,18 @@ export const generateOperationalInsights = async (data: WarehouseData, result: C
         3. Suggest an operational move (e.g., move people from packing to picking).
         `;
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
-            contents: prompt,
-        });
+    const response = await ai.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: prompt,
+    });
 
-        return response.text || "Brak analizy.";
+    return response.text || "Brak analizy.";
 
-    } catch (error: any) {
-        console.error("AI Analysis Error:", error);
-        if (error.message.includes("API key")) {
-            return "Błąd klucza API. Sprawdź ustawienia Vercel.";
-        }
-        return "Nie udało się wygenerować analizy. Sprawdź połączenie.";
+  } catch (error: any) {
+    console.error("AI Analysis Error:", error);
+    if (error.message.includes("API key")) {
+      return "Błąd klucza API. Sprawdź ustawienia Vercel.";
     }
+    return "Nie udało się wygenerować analizy. Sprawdź połączenie.";
+  }
 }
